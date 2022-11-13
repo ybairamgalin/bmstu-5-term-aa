@@ -3,3 +3,4 @@ cmake-build-debug/*
 lib/*
 other_labs/*
 */out/*
+*.tmp*

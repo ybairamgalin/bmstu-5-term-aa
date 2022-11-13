@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <stdexcept>
+#include <istream>
 
 namespace models {
 
@@ -10,6 +11,9 @@ class Matrix {
  public:
   using Row = std::vector<ValueType>;
   using MatrixType = std::vector<Row>;
+
+  Matrix()
+      : values_(std::vector(1, std::vector<ValueType>(1))) {}
 
   Matrix(std::size_t rows, std::size_t columns)
       : values_(std::vector(rows, std::vector<ValueType>(columns))) {
@@ -32,5 +36,20 @@ class Matrix {
  private:
   MatrixType values_;
 };
+
+template<typename ValueType>
+std::istream& operator>>(std::istream& input, Matrix<ValueType>& matrix) {
+  std::size_t rows, columns;
+  input >> rows >> columns;
+
+  matrix = Matrix<ValueType>{rows, columns};
+  for (std::size_t i = 0; i < rows; ++i) {
+    for (std::size_t j = 0; j < columns; ++j) {
+      input >> matrix[i][j];
+    }
+  }
+
+  return input;
+}
 
 }  // namespace models
