@@ -11,12 +11,22 @@ include_directories(
         ${gtest_SOURCE_DIR}/include
         ${gtest_SOURCE_DIR})
 
-add_executable(lab_03_run_test_sort
+add_executable(lab_02_run_tests
+        lab_02/src/tests/test_matrix_multiplication.cpp
+        lab_02/src/algorithms/matrix_multiplication.hpp
+        lab_02/src/models/matrix.hpp)
+target_include_directories(lab_02_run_tests
+        PRIVATE lab_02/src)
+target_link_libraries(lab_02_run_tests
+        gtest
+        gtest_main)
+
+add_executable(lab_03_run_tests
         lab_03/src/tests/test_sort.cpp
         lab_03/src/algorithms/sort.hpp)
-target_include_directories(lab_03_run_test_sort
+target_include_directories(lab_03_run_tests
         PRIVATE lab_03/src)
-target_link_libraries(lab_03_run_test_sort
+target_link_libraries(lab_03_run_tests
         gtest
         gtest_main)
 

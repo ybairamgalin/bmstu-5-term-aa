@@ -1,4 +1,5 @@
 #include <vector>
+#include <functional>
 
 #include <gtest/gtest.h>
 
