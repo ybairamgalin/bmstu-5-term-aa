@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<h1>Лаба 4 по АА. Веб </h1>
+<div id="container"></div>
+<script type="text/javascript">
+    async function get_data() {
+        return await fetch("/get_tasks", {
+            method: 'POST',
+            headers: {"Content-Type": "application/json"},
+            mode: 'cors',
+            cache: 'no-cache',
+            body: JSON.stringify({"some_prop": 123})
+        }).then(function (result) {
+            return result.json();
+        }).then((function (result) {
+            console.log(result);
+            return result['items'];
+        }));
+    }
+    const data = get_data();
+    data.then(function(d) {
+        document.getElementById('container').innerHTML += "<ul>";
+        d.forEach(function (item, index) {
+            document.getElementById('container').innerHTML +=
+                "<li>" + item + "</li>"
+        });
+        document.getElementById('container').innerHTML += "</ul>";
+    });
+</script>
+</body>
+</html>

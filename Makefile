@@ -1,10 +1,17 @@
 .PHONY : install-build-deps
-install-build-deps : lib/googletest
+install-build-deps : lib/googletest lib/fmt
 
 lib/googletest :
 	mkdir -p lib
 	mkdir -p lib/googletest
 	git clone https://github.com/google/googletest.git lib/googletest
+
+lib/fmt :
+	mkdir -p lib
+	mkdir -p lib/fmt
+	git clone https://github.com/fmtlib/fmt.git lib/fmt
+	mkdir -p lib/fmt/build
+	cd lib/fmt/build && cmake ..
 
 .PHONY : build-all
 build-all :

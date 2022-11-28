@@ -10,6 +10,7 @@ add_compile_options(
         -O2)
 
 add_subdirectory("lib/googletest")
+add_subdirectory("lib/fmt")
 include_directories(
         ${gtest_SOURCE_DIR}/include
         ${gtest_SOURCE_DIR})
@@ -46,3 +47,26 @@ add_executable(lab_03_execution_time
         lab_03/src/time_measurement/sort_time_execution.cpp)
 target_include_directories(lab_03_execution_time
         PRIVATE lab_03/src)
+
+add_executable(lab_04_server
+        lab_04/src/main.cpp
+        lab_04/src/components.hpp
+        lab_04/src/views/get_tasks/handler.hpp
+        lab_04/src/views/get_tasks/handler.cpp
+        lab_04/src/views/handler.cpp
+        lab_04/src/views/handler.hpp
+        lab_04/src/models/request.hpp
+        lab_04/src/models/response.hpp
+        lab_04/src/models/response.cpp
+        lab_04/src/utils/to_string.hpp
+        lab_04/src/utils/parse.hpp
+        lab_04/src/utils/parse.cpp
+        lab_04/src/pool/thread_pool.hpp
+        lab_04/src/pool/blocking_queue.hpp)
+target_include_directories(lab_04_server
+        PRIVATE lab_04/src
+        PRIVATE lib/fmt/include/)
+target_link_libraries(lab_04_server
+        fmt)
+add_executable(lab_04_client
+        lab_04/src/client.cpp)
