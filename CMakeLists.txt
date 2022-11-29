@@ -7,7 +7,7 @@ add_compile_options(
         -Werror
         -Wextra
         -Wpedantic
-        -O2)
+        -O0)
 
 add_subdirectory("lib/googletest")
 add_subdirectory("lib/fmt")

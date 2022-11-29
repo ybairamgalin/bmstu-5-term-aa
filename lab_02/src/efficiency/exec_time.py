@@ -71,10 +71,13 @@ def graph():
     sz = [s[0] for s in SIZES]
 
     plt.plot(sz, res_simple, label='simple')
-    plt.plot(sz, res_vinograd, label='v')
-    plt.plot(sz, res_vinograd_optimized, label='vo')
-
+    plt.plot(sz, res_vinograd, label='Vinograd')
+    plt.plot(sz, res_vinograd_optimized, label='Vinograd optimized')
     plt.legend()
+    plt.grid()
+    plt.title("Временные характеристики алгоритмов умножения матриц")
+    plt.ylabel("Затраченное время, с")
+    plt.xlabel("Рзамер матрицы, элемент.")
     plt.show()
 
 
