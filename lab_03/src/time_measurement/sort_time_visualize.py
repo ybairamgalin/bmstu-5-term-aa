@@ -37,21 +37,15 @@ def main():
     plot.xlabel("Длина, ед.")
 
     figure_reversed = plot.figure()
-    plot_reversed = figure_reversed.add_subplot()
-    plot_reversed.plot(
+    plot_rev = figure_reversed.add_subplot()
+    plot_rev.plot(array_lengths, radix_times[1], MARKER, label='radix sort')
+    plot_rev.plot(array_lengths, beads_times[1], MARKER, label='beads sort')
+    plot_rev.plot(
         array_lengths,
-        radix_times[1],
+        binary_tree_times[1],
         MARKER,
-        label='radix sort'
+        label='binary tree sort'
     )
-    plot_reversed.plot(
-        array_lengths,
-        beads_times[1],
-        MARKER,
-        label='beads sort'
-    )
-    plot_reversed.plot(
-        array_lengths, binary_tree_times[1], MARKER, label='binary tree sort')
     plot.legend()
     plot.grid()
     plot.title("Временные характеристики алгоритмов сортировок")
@@ -60,7 +54,12 @@ def main():
 
     figure_random = plot.figure()
     plot_random = figure_random.add_subplot()
-    plot_random.plot(array_lengths, radix_times[2], MARKER, label='radix sort')
+    plot_random.plot(
+        array_lengths,
+        radix_times[2],
+        MARKER,
+        label='radix sort'
+    )
     plot_random.plot(array_lengths, beads_times[2], MARKER, label='beads sort')
     plot_random.plot(
         array_lengths,
@@ -81,8 +80,27 @@ def main():
         beads_times,
     )
 
+    figure_random_2 = plot.figure()
+    plot_random_2 = figure_random_2.add_subplot()
+    plot_random_2.plot(
+        array_lengths,
+        radix_times[2],
+        MARKER,
+        label='radix sort')
+    plot_random_2.plot(
+        array_lengths,
+        binary_tree_times[2],
+        MARKER,
+        label='binary tree sort'
+    )
+    plot.legend()
+    plot.grid()
+    plot.title("Временные характеристики алгоритмов сортировок")
+    plot.ylabel("Затраченное время, мкс")
+    plot.xlabel("Длина, ед.")
+
     for index, figure in enumerate(
-            [figure_sorted, figure_reversed, figure_random]):
+            [figure_sorted, figure_reversed, figure_random, figure_random_2]):
         figure.set_size_inches(12, 7)
         figure.savefig(f'../../docs/inc/img/sort_time_graph_{index}', dpi=300)
 
