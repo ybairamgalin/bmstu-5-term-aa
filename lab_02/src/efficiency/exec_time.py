@@ -11,29 +11,29 @@ TEST_FILE = '/Users/yaroslavbairamgalin/Desktop/Studies/BMSTU/5 term/aa/' \
             'aa_labs/lab_02/time_test_data.tmp.txt'
 
 SIZES = [
-    # (10, 10),
-    # (50, 50),
-    # (100, 100),
+    (10, 10),
+    (50, 50),
     (100, 100),
-    # (200, 200),
-    # (300, 300),
-    # (400, 400),
-    # (500, 500),
+    (100, 100),
+    (200, 200),
+    (300, 300),
+    (400, 400),
+    (500, 500),
 ]
 
 
 def main():
     generate_test_data()
-    # if run() != 0:
-    #     return 1
-    # graph()
+    if run() != 0:
+        return 1
+    graph()
 
 
 def generate_test_data():
     print('Generation of random data started...')
 
     test_file = open(TEST_FILE, 'w')
-    # test_file.write(f'{len(SIZES)}\n')
+    test_file.write(f'{len(SIZES)}\n')
     for index, size in enumerate(SIZES):
         first_matrix = generate_matrix(size)
         write_matrix_to_file(test_file, first_matrix)
@@ -53,7 +53,7 @@ def write_matrix_to_file(test_file, matrix):
     size = (len(matrix), len(matrix[0]))
     test_file.write(f'{size[0]} {size[1]} ')
     for row in matrix:
-        test_file.write(f'{" ".join(list(map(str, row)))} ')
+        test_file.write(f'{" ".join(list(map(str, row)))}\n')
 
 
 def graph():

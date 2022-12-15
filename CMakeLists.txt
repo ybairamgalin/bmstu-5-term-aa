@@ -15,6 +15,17 @@ include_directories(
         ${gtest_SOURCE_DIR}/include
         ${gtest_SOURCE_DIR})
 
+add_executable(lab_01_run_tests
+        lab_01/src/tests/test_levenshtein_distance.cpp
+        lab_01/src/algorithms/levenshtein_distance.hpp
+        lab_01/src/algorithms/levenshtein_distance.cpp
+        )
+target_include_directories(lab_01_run_tests
+        PRIVATE lab_01/src)
+target_link_libraries(lab_01_run_tests
+        gtest
+        gtest_main)
+
 add_executable(lab_02_run_tests
         lab_02/src/tests/test_matrix_multiplication.cpp
         lab_02/src/algorithms/matrix_multiplication.hpp
@@ -72,5 +83,3 @@ target_include_directories(lab_04_server
         PRIVATE lib/fmt/include/)
 target_link_libraries(lab_04_server
         fmt)
-add_executable(lab_04_client
-        lab_04/src/client.cpp)
