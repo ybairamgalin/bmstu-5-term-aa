@@ -5,7 +5,7 @@
 #include "models/request.hpp"
 #include "models/response.hpp"
 
-namespace views::get_tasks {
+namespace views::multiply_matrix {
 
 class Handler {
  public:

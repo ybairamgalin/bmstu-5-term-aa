@@ -92,7 +92,7 @@ Request Parse(std::string str, To<Request>) {
   std::istringstream string_stream(str);
   std::string buf;
   while (getline(string_stream, buf, '\n')) {
-    request_split.push_back(buf);
+    request_split.push_back(std::move(buf));
   }
   if (request_split.empty()) {
     throw std::runtime_error("Parsing : empty request");
@@ -106,9 +106,6 @@ Request Parse(std::string str, To<Request>) {
   result.headers = ParseHeaders(request_split);
   result.body = ParseBody(request_split);
 
-  std::cout << "path=" << result.path << "\n";
-  std::cout << "body=" <<
-      (result.body.has_value() ? result.body.value() : "nan") << "\n";
   return result;
 }
 

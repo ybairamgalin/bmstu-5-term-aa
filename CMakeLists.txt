@@ -51,18 +51,22 @@ target_include_directories(lab_03_execution_time
 add_executable(lab_04_server
         lab_04/src/main.cpp
         lab_04/src/components.hpp
-        lab_04/src/views/get_tasks/handler.hpp
-        lab_04/src/views/get_tasks/handler.cpp
+        lab_04/src/components.cpp
+        lab_04/src/views/multiply_matrix/handler.hpp
+        lab_04/src/views/multiply_matrix/handler.cpp
         lab_04/src/views/handler.cpp
         lab_04/src/views/handler.hpp
         lab_04/src/models/request.hpp
         lab_04/src/models/response.hpp
         lab_04/src/models/response.cpp
+        lab_04/src/models/matrix.hpp
         lab_04/src/utils/to_string.hpp
         lab_04/src/utils/parse.hpp
         lab_04/src/utils/parse.cpp
         lab_04/src/pool/thread_pool.hpp
-        lab_04/src/pool/blocking_queue.hpp)
+        lab_04/src/pool/blocking_queue.hpp
+        lab_04/src/server/server.cpp
+        lab_04/src/server/server.hpp)
 target_include_directories(lab_04_server
         PRIVATE lab_04/src
         PRIVATE lib/fmt/include/)

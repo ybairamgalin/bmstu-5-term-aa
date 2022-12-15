@@ -1,0 +1,324 @@
+\chapter{Технологическая часть}
+
+В данном разделе будут приведены требования к программному обеспечению, используемые технологии и реализации алгоритмов.
+
+\section{Требования к программному обеспечению}
+
+К программе предъявляется ряд требований:
+
+\begin{itemize}
+	\item запрос поступает по заданному адресу сетевого соединения на порт 5002;
+	\item запрос поступает в формате http запроса, версия протокола 1.1;
+	\item в запросе HTTP метод — POST;
+	\item в запросе путь к ресурсу — /api/multiply\_matrix;
+	\item в запросе указан заголовок Content-Type, его значение — text;
+	\item в запросе указан заголовок Content-Length, его значение — длина тела запроса;
+	\item в теле запроса располагаются через пробел (также допустимо использовать символ переноса строки вместо пробела) целые числа следующим образом: первые 2 числа $m_1$,  $n_1$ — размеры первой матрицы, далее расположены $m_1 \cdot n_1$ чисел — значения первой матрицы, далее 2 числа $m_2$, $n_2$ — размеры второй матрицы, далее $m_2 \cdot n_2$ чисел — значения второй матрицы;
+	\item ответ поступает в формате http ответа.
+	\item ответ содержит зоголовок Content-Type, его значение — text;
+	\item ответ содержит заголовок Content-Length, его значение — длина тела запроса;
+	\item при успешной обработке запроса в ответе содержится код выполнения 200, статус OK, в теле ответа через пробел (или знак переноса строки) располагаются целые числа, два первых из которых показывают размер полученной матрицы, остальные - содержание полученной матрицы;
+	\item при ошибке соответствия формата запроса протоколу http запроса в ответе содержится код выполнения 400, статус Bad Request;
+	\item при невозмомти умножения указанных в запросе матриц или несоответствия тела запроса формату, указанному выше в ответе содержится код выполнения 400, статус Bad Request.
+\end{itemize}
+
+\section{Выбор средств реализации}
+
+В качестве языка программирования для реализации данной лабораторной работы был выбран язык программирования C++\cite{pythonlang}. Язык позволяет управлять всеми ресурсами компьютера и позволяет делать необхоимые системные вызовы.
+
+Тестирование корректности работы серверного приложения производилось с помощью утилиты curl[2].
+
+Метрики, изложенные в подразделе 2.6 замерены утилитой ab - Apache HTTP server benchmarking tool[3]
+
+\section{Реализация алгоритмов}
+
+Для параллельной обработки запросов были разработаны два класса: BlockingQueue, TreadPool. Их реализация представлена в лимтингах 3.1, 3.2 соответственно.
+
+Непосредственно реализация серверного приложения представлена в классе Server в листинге 3.3. 
+
+\begin{lstlisting}[caption=Реализация блокирующей очереди]
+#pragma once
+
+#include <deque>
+#include <mutex>
+#include <thread>
+#include <chrono>
+#include <condition_variable>
+
+template<typename Task>
+class BlockingQueue {
+	public:
+	void Add(Task task) {
+		std::lock_guard guard(mutex_);
+		queue_.push_back(std::move(task));
+		queue_not_empty_.notify_one();
+	}
+	
+	Task Take() {
+		std::unique_lock lock(mutex_);
+		while (true) {
+			if (!queue_.empty()) {
+				return TakeLocked();
+			} else {
+				queue_not_empty_.wait(lock);
+			}
+		}
+	}
+	
+	private:
+	Task TakeLocked() {
+		Task oldest = std::move(queue_.front());
+		queue_.pop_front();
+		return oldest;
+	}
+	
+	std::deque<Task> queue_; // Guarded by mutex_
+	std::mutex mutex_;
+	std::condition_variable queue_not_empty_;
+};
+
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Реализация пула потоков]
+#pragma once
+
+#include <thread>
+#include <functional>
+#include <deque>
+#include <vector>
+#include <stdexcept>
+
+
+#include "pool/blocking_queue.hpp"
+
+template<typename Task>
+class StaticThreadPool {
+	public:
+	explicit StaticThreadPool(int thread_count)
+	: thread_count_(thread_count) {
+		StartWorkers();
+	}
+	
+	void Submit(Task task) {
+		blocking_queue_.Add(std::move(task));
+	}
+	
+	void Join() {
+		for (size_t i = 0; i < thread_count_; ++i) {
+			blocking_queue_.Add({});
+		}
+	}
+	
+	private:
+	void StartWorkers() {
+		if (!pool_.empty()) {
+			throw std::runtime_error("Bad start workers call");
+		}
+		
+		for (int i = 0; i < thread_count_; ++i) {
+			std::cout << "Starting worker " << i  << "\n";
+			pool_.emplace_back([this]() {
+				WorkerRoutine();
+			});
+		}
+	}
+	
+	void WorkerRoutine() {
+		while(true) {
+			auto task = blocking_queue_.Take();
+			if (!task) {
+				break;
+			}
+			task();
+		}
+	}
+	
+	const int thread_count_;
+	BlockingQueue<Task> blocking_queue_;
+	std::vector<std::thread> pool_;
+};
+
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Реализация сервара из файла server/server.hpp]
+#pragma once
+
+#include <iostream>
+#include <string>
+#include <functional>
+
+#include "pool/thread_pool.hpp"
+#include "components.hpp"
+
+class Server {
+	using Task = std::function<void()>;
+	public:
+	Server();
+	
+	void StartListening();
+	
+	private:
+	void ProcessRequest(int new_socket_descriptor) const;
+	
+	int socket_descriptor_;
+	components::EndpointProvider endpoint_provider_;
+	StaticThreadPool<Task> thread_pool_;
+};
+
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Реализация сервара из файла server/server.cpp]
+#include "server.hpp"
+
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <functional>
+#include <memory>
+
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+#include "models/request.hpp"
+#include "models/response.hpp"
+#include "utils/parse.hpp"
+#include "views/multiply_matrix/handler.hpp"
+#include "views/handler.hpp"
+#include "pool/thread_pool.hpp"
+#include "components.hpp"
+
+namespace {
+	
+	int kServerPortNumber = 5002;
+	
+}
+
+Server::Server()
+: socket_descriptor_(socket(AF_INET, SOCK_STREAM, 0)),
+endpoint_provider_(components::EndpointProvider()),
+thread_pool_(24) {
+	endpoint_provider_.Register(
+	views::Handler::HandleRequest,
+	RequestType::kGet, "/");
+	endpoint_provider_.Register(
+	views::multiply_matrix::Handler::HandleRequest,
+	RequestType::kPost, "/api/multiply_matrix");
+	
+	if (socket_descriptor_ == -1) {
+		throw std::runtime_error("Socker error");
+	}
+	
+	int enable = 1;
+	const auto opt_rc = setsockopt(socket_descriptor_, SOL_SOCKET, SO_REUSEADDR,
+	&enable, sizeof(int));
+	if (opt_rc == -1) {
+		throw std::runtime_error("Setopt error");
+	}
+	
+	sockaddr_in address{};
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = INADDR_ANY;
+	address.sin_port = htons(kServerPortNumber);
+	
+	auto* converted_address = (sockaddr*)&address;
+	if (bind(socket_descriptor_, converted_address, sizeof(address)) < 0) {
+		throw std::runtime_error("Bind error");
+	}
+	
+	std::cout << "Server is ready to accept connections\n";
+}
+
+void Server::StartListening() {
+	listen(socket_descriptor_, 100);
+	
+	sockaddr_in client_address{};
+	socklen_t client_length = sizeof(client_address);
+	std::cout << "Listening on port " << kServerPortNumber << "\n";
+	
+	while (true) {
+		const auto new_sfd = accept(
+		socket_descriptor_, (sockaddr*)&client_address, &client_length);
+		if (new_sfd < 0) {
+			throw std::runtime_error("Accept error");
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		thread_pool_.Submit([this, new_sfd]() {
+			ProcessRequest(new_sfd);
+			close(new_sfd);
+		});
+	}
+}
+
+void Server::ProcessRequest(int new_socket_descriptor) const {
+	constexpr const size_t buffer_size = 524288;
+	std::unique_ptr<char[]> buffer = std::make_unique<char[]>(buffer_size);
+	bzero(buffer.get(), buffer_size);
+	
+	if (recv(new_socket_descriptor, buffer.get(),
+	buffer_size, 0) == -1) {
+		throw std::runtime_error("Read error");
+	}
+	
+	Request request{};
+	Response response{};
+	try {
+		request = utils::Parse(buffer.get(), utils::To<Request>());
+		const auto endpoint = endpoint_provider_.Get(request.type, request.path);
+		response = endpoint(request);
+	} catch (std::exception& error) {
+		std::cerr << "Error occurred while handling request : " << error.what();
+		response = Response{500, "Server error"};
+	}
+	
+	const auto response_string = BuildResponseString(response);
+	const auto written_bytes = write(
+	new_socket_descriptor, response_string.c_str(), response_string.size());
+	
+	if (written_bytes < 0) {
+		std::cerr << "Write error";
+	}
+}	
+\end{lstlisting}
+
+
+\section{Тестрование}
+
+Рассмотрены несколько тестовых случае, указанных ниже.
+
+\begin{itemize}
+	\item запрос из листинга 3.5 - ответ из листинга 3.6
+	\begin{lstlisting}[caption={Запрос, проверяющий правильность ответа на корректных данных}]
+	post /api/multiply_matrix HTTP/1.0
+	Host: localhost:5002
+	User-Agent: curl/7.84.0
+	Accept: */*
+	Content-Type: text
+	Content-Length: 25
+	
+	2 2
+	5 7
+	9 1
+	2 2
+	7 4
+	1 -5
+	\end{lstlisting}
+\end{itemize}
+
+\begin{itemize}
+	\item запрос из листинга 3.5 - ответ из листинга 3.6
+	\begin{lstlisting}[caption={Ожидаемый ответ на запрос из листинга 3.5}]
+	HTTP/1.1 200 OK
+	Content-Length: 25
+	Content-Type: text
+	
+	2 2
+	42 -15
+	64 31
+	\end{lstlisting}
+\end{itemize}
+
+\newpage
+\section*{Вывод}
+
+Разработано серверное приожение, удовлетворяющее изложенным требованиям

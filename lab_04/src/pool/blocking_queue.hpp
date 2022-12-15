@@ -25,6 +25,7 @@ class BlockingQueue {
       }
     }
   }
+
  private:
   Task TakeLocked() {
     Task oldest = std::move(queue_.front());

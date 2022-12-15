@@ -1,3 +1,5 @@
+#pragma once
+
 #include "fmt/format.h"
 
 #include "models/request.hpp"

@@ -22,7 +22,9 @@ class StaticThreadPool {
   }
 
   void Join() {
-    // TODO
+    for (size_t i = 0; i < thread_count_; ++i) {
+      blocking_queue_.Add({});
+    }
   }
 
  private:
@@ -42,7 +44,9 @@ class StaticThreadPool {
   void WorkerRoutine() {
     while(true) {
       auto task = blocking_queue_.Take();
-      std::cout << "Thread id " << std::this_thread::get_id() << "\n";
+      if (!task) {
+        break;
+      }
       task();
     }
   }

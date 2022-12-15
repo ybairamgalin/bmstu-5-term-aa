@@ -14,7 +14,7 @@ const std::map<int, std::string> kCodeToStatus{
 };
 
 const std::map<int, std::string> kCodeToContentType{
-    std::pair(200, "text/html"),
+    std::pair(200, "text"),
     std::pair(400, "text"),
     std::pair(500, "text"),
 };
