@@ -13,6 +13,10 @@ lib/fmt :
 	mkdir -p lib/fmt/build
 	cd lib/fmt/build && cmake ..
 
+lib/pqxx :
+	mkdir -p lib
+	git clone https://github.com/jtv/libpqxx.git lib/pqxx
+
 .PHONY : build-all
 build-all :
 	cmake -Bcmake-build -S.

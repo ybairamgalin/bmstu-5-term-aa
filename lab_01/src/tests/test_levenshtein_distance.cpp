@@ -59,7 +59,7 @@ TEST(TestDistance, OneEmpty) {
 }
 
 TEST(TestDistance, AnotherGeneral) {
-  const std::string first = "minsubishi";
+  const std::string first = "mitsubishi";
   const std::string second = "mercedes-benz";
   TestAlgorithms(first, second, 11);
 }

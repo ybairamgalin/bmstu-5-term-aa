@@ -1,0 +1,224 @@
+\chapter{Технологическая часть}
+
+В данном разделе будут приведены требования к программному обеспечению, используемые технологии и реализации алгоритмов.
+
+\section{Требования к программному обеспечению}
+
+К программе предъявляется ряд требований:
+
+\begin{itemize}
+	\item на вход подаются 2 произвольные строки ASCII символов;
+	\item в случае успешного выполнения возвращается одно целое число — расстояние Дамерау-Левенштейна;
+	\item в случае если по какой-либо причине не удалось найти расстояние Дамерау-Левенштейна — вывести ошибку.
+\end{itemize}
+
+\section{Выбор средств реализации}
+
+В качестве языка программирования для реализации данной лабораторной работы был выбран язые программирования C++\cite{pythonlang}.
+
+Язык позволяет управлять всеми ресурсами компьютера и, тем самым позволяет
+писать эффективные алгоритмы.
+
+Время работы алгоритмов было замерено с помощью функции из листинга \ref{lst:exec_time}, разработанной самостоятельно.
+
+\clearpage
+\begin{lstlisting}[label=lst:exec_time, caption=Функция для замера времени исполнения функции]
+	template <typename F, typename... Args>
+	auto GetExecutionTime(F function, Args&&... args) {
+		const auto start_time = std::chrono::high_resolution_clock::now();
+		const auto return_value = function(std::forward<Args>(args)...);
+		const auto end_time = std::chrono::high_resolution_clock::now();
+		return std::pair(
+				std::chrono::duration_cast<TimeUnit>(end_time - start_time),
+				return_value);
+	}
+\end{lstlisting}
+
+\section{Реализация алгоритмов}
+
+В листингах 3.2, 3.3, 3.4 представлены реализации матричного алгоритма Дамерау-Левенштейна, 
+рекурсивного алгоритма Дамерау-Левенштейна, рекурсивного алгоритма Дамерау-Левенштейна с кешированием.
+
+\begin{lstlisting}[caption=Матричный алгоритм Дамерау-Левенштейна]
+int DamerauLevenshteinDistance(
+    const std::string& first, const std::string& second) {
+	using Row = std::vector<int>;
+	using Matrix = std::vector<Row>;
+	
+	Matrix distances(first.size() + 1, Row(second.size() + 1));
+	
+	for (size_t i = 0; i < distances.size(); ++i) {
+		distances[i][0] = int(i);
+	}
+	for (size_t j = 0; j < distances[0].size(); ++j) {
+		distances[0][j] = int(j);
+	}
+	for (size_t i = 1; i < distances.size(); ++i) {
+		for (size_t j = 1; j < distances[0].size(); ++j) {
+			int cost = 1;
+			if (first[i - 1] == second[i - 1]) {
+				cost = 0;
+			}
+			distances[i][j] = std::min({
+				distances[i - 1][j] + 1,
+				distances[i][j - 1] + 1,
+				distances[i - 1][j - 1] + cost});
+			
+			if (i > 1 && j > 1 &&
+			first[i - 1] == second[j - 2] && first[i - 2] == second[j - 1]) {
+				distances[i][j] = std::min({
+					distances[i][j], distances[i - 2][j - 2] + cost});
+			}
+		}
+	}
+	
+	return distances[first.size()][second.size()];
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Рекурсивный алгоритм Дамерау-Левенштейна]
+int DamerauLevenshteinDistanceRecursive(
+const std::string& first, const std::string& second) {
+	if (first.empty()) {
+		return int(second.size());
+	}
+	if (second.empty()) {
+		return int(first.size());
+	}
+	
+	std::function<int(int, int)> calculate_distance_recursively;
+	calculate_distance_recursively = [&](int i, int j) -> int {
+		if (i == 0 && j == 0) {
+			return (first[i] != second[j]) ? 1 : 0;
+		}
+		if (i == 0) {
+			return int(j);
+		}
+		if (j == 0) {
+			return int(i);
+		}
+		
+		int cost = (first[i] != second[j]) ? 1 : 0;
+		
+		int delete_operation_cost = calculate_distance_recursively(i - 1, j) + 1;
+		int insert_operation_cost = calculate_distance_recursively(i, j - 1) + 1;
+		int correspondence_operation_cost =
+		calculate_distance_recursively(i - 1, j - 1) + cost;
+		if (i > 1 && j > 1 &&
+		first[i] == second[j - 1] && first[i - 1] == second[j]) {
+			int swap_operation_cost =
+			calculate_distance_recursively(i - 2, j - 2) + 1;
+			return std::min({
+				delete_operation_cost, insert_operation_cost,
+				correspondence_operation_cost, swap_operation_cost});
+		}
+		
+		return std::min({
+			delete_operation_cost, insert_operation_cost,
+			correspondence_operation_cost});
+	};
+	
+	return calculate_distance_recursively(
+	int(first.size() - 1), int(second.size() - 1));
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Рекурсивный алгоритм Дамерау-Левенштейна с кешированием]
+int DamerauLevenshteinDistanceRecursiveCached(
+const std::string& first, const std::string& second) {
+	using Row = std::vector<std::optional<int>>;
+	using Matrix = std::vector<Row>;
+	
+	if (first.empty()) {
+		return int(second.size());
+	}
+	if (second.empty()) {
+		return int(first.size());
+	}
+	
+	Matrix calculated_distances(first.size() + 1, Row(second.size() + 1));
+	std::function<int(int, int)> calculate_distance_recursively;
+	calculate_distance_recursively = [&](int i, int j) -> int {
+		if (i == 0 && j == 0) {
+			return (first[i] != second[j]) ? 1 : 0;
+		}
+		if (i == 0) {
+			return int(j);
+		}
+		if (j == 0) {
+			return int(i);
+		}
+		if (calculated_distances[i][j].has_value()) {
+			return calculated_distances[i][j].value();
+		}
+		
+		int cost = (first[i] != second[j]) ? 1 : 0;
+		
+		int delete_operation_cost = calculate_distance_recursively(i - 1, j) + 1;
+		int insert_operation_cost = calculate_distance_recursively(i, j - 1) + 1;
+		int correspondence_operation_cost =
+		calculate_distance_recursively(i - 1, j - 1) + cost;
+		if (i > 1 && j > 1 &&
+		first[i] == second[j - 1] && first[i - 1] == second[j]) {
+			int swap_operation_cost =
+			calculate_distance_recursively(i - 2, j - 2) + 1;
+			int result = std::min({
+				delete_operation_cost, insert_operation_cost,
+				correspondence_operation_cost, swap_operation_cost});
+			calculated_distances[i][j] = result;
+			return result;
+		}
+		
+		int result = std::min({
+			delete_operation_cost, insert_operation_cost,
+			correspondence_operation_cost});
+		calculated_distances[i][j] = result;
+		
+		return result;
+	};
+	
+	return calculate_distance_recursively(
+	int(first.size() - 1), int(second.size() - 1));
+}
+\end{lstlisting}
+
+
+\section{Тестрование}
+
+
+
+В таблице \ref{tab:tests} рассмотрены случаи ожидаемого поведения программы. Все тесты были успешно пройдены.
+
+\begin{table}[h]
+	\begin{center}
+		\captionsetup{justification=raggedright,singlelinecheck=off}
+		\caption{\label{tab:tests} Функциональные тесты}
+		\begin{tabular}{|c|c|c|c|c|}
+		\hline
+		Строка 1 & Строка 2 & Ожидаемый результат \\ 
+		\hline
+		<<пустая строка>> & <<пустая строка>> & 0 \\ 
+		\hline
+		cat & hat & 1 \\ 
+		\hline
+		apple & aplpe & 1 \\ 
+		\hline
+		qwerty & queue & 4 \\ 
+		\hline
+		wolf & wolf & 0 \\
+		\hline
+		word &  <<пустая строка>>& 4 \\
+		\hline
+		mitsubishi & mercedes-benz & 11 \\
+		\hline
+		
+
+		\end{tabular}
+	\end{center}
+\end{table}
+
+
+\newpage
+\section*{Вывод}
+
+Разработаны и тестированы 3 алгоритма. Все алгоритмы соответствуют заявленным требованиям.

@@ -1,0 +1,22 @@
+\babel@toc {russian}{}\relax 
+\contentsline {chapter}{Введение}{3}{chapter*.2}%
+\contentsline {chapter}{\numberline {1}Аналитическая часть}{4}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Протокол HTTP}{4}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Серверное приложение}{6}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Рапараллеливание обработки запросов}{7}{section.1.3}%
+\contentsline {chapter}{\numberline {2}Конструкторская часть}{9}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Серверное приложение}{9}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Очередь задач}{9}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Потребители}{9}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Парсинг http запросов}{10}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Модель оценки эффективности серверного приложения}{10}{section.2.5}%
+\contentsline {chapter}{\numberline {3}Технологическая часть}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Требования к программному обеспечению}{11}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Выбор средств реализации}{12}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Реализация алгоритмов}{12}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Тестрование}{18}{section.3.4}%
+\contentsline {chapter}{\numberline {4}Исследовательская часть}{21}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Технические характеристики}{21}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Анализ метрик}{21}{section.4.2}%
+\contentsline {chapter}{Заключение}{23}{chapter*.6}%
+\contentsline {chapter}{Список использованных источников}{24}{chapter*.6}%

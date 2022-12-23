@@ -11,6 +11,7 @@ add_compile_options(
 
 add_subdirectory("lib/googletest")
 add_subdirectory("lib/fmt")
+add_subdirectory("lib/libpqxx")
 include_directories(
         ${gtest_SOURCE_DIR}/include
         ${gtest_SOURCE_DIR})
@@ -18,16 +19,24 @@ include_directories(
 add_executable(lab_01_run_tests
         lab_01/src/tests/test_levenshtein_distance.cpp
         lab_01/src/algorithms/levenshtein_distance.hpp
-        lab_01/src/algorithms/levenshtein_distance.cpp
-        )
+        lab_01/src/algorithms/levenshtein_distance.cpp)
 target_include_directories(lab_01_run_tests
         PRIVATE lab_01/src)
 target_link_libraries(lab_01_run_tests
         gtest
         gtest_main)
 
+add_executable(lab_01_execution_time
+        lab_01/src/efficiency/execution_time.cpp
+        lab_01/src/utils/execution_time.hpp
+        lab_01/src/algorithms/levenshtein_distance.hpp
+        lab_01/src/algorithms/levenshtein_distance.cpp)
+target_include_directories(lab_01_execution_time
+        PRIVATE lab_01/src)
+
 add_executable(lab_02_run_tests
         lab_02/src/tests/test_matrix_multiplication.cpp
+        lab_02/src/utils/execution_time.hpp
         lab_02/src/algorithms/matrix_multiplication.hpp
         lab_02/src/models/matrix.hpp)
 target_include_directories(lab_02_run_tests
@@ -83,3 +92,27 @@ target_include_directories(lab_04_server
         PRIVATE lib/fmt/include/)
 target_link_libraries(lab_04_server
         fmt)
+
+add_executable(lab_05_server_conveyor
+        lab_05/src/main.cpp
+        lab_05/src/components.hpp
+        lab_05/src/components.cpp
+        lab_05/src/server/server.cpp
+        lab_05/src/server/server.hpp
+        lab_05/src/pool/blocking_queue.hpp
+        lab_05/src/pool/thread_pool.hpp
+        lab_05/src/models/response.hpp
+        lab_05/src/models/response.cpp
+        lab_05/src/models/request.hpp
+        lab_05/src/utils/parse.hpp
+        lab_05/src/utils/parse.cpp
+        lab_05/src/utils/to_string.hpp
+        lab_05/src/views/handler.hpp
+        lab_05/src/views/handler.cpp)
+target_include_directories(lab_05_server_conveyor
+        PRIVATE lab_05/src
+        PRIVATE lib/fmt/include
+        PRIVATE lib/libpqxx/include)
+target_link_libraries(lab_05_server_conveyor
+        fmt
+        pqxx)
